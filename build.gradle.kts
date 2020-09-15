@@ -27,6 +27,7 @@ dependencies {
     }
 
 
+    implementation ("org.springframework.boot:spring-boot-starter-jdbc")
     runtimeOnly( "mysql:mysql-connector-java")
     implementation("com.squareup.okhttp3:okhttp:+")
     implementation ("com.google.code.gson:gson:2.8.6")
