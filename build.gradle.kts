@@ -13,6 +13,7 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -24,6 +25,21 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
+
+
+    implementation ("org.springframework.boot:spring-boot-starter-jdbc")
+    runtimeOnly( "mysql:mysql-connector-java")
+    implementation("com.squareup.okhttp3:okhttp:+")
+    implementation ("com.google.code.gson:gson:2.8.6")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
+
+
+    compile("org.jetbrains.exposed", "exposed-core", "0.24.1")
+    compile("org.jetbrains.exposed", "exposed-dao", "0.24.1")
+    compile("org.jetbrains.exposed", "exposed-jdbc", "0.24.1")
+
+
+
 }
 
 tasks.withType<Test> {
