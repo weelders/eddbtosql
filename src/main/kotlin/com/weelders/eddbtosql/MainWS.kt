@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class MainWS
 {
+    //Use interface for DAO
     @Autowired
     lateinit var commoditiesDaoI: CommoditiesDaoI
 
@@ -21,16 +22,19 @@ class MainWS
     }
 
     @GetMapping("/update")
-    fun pdateAll(): String
+    fun updateAll(): String
     {
         println("/update")
         val comoditieslist = updateCommodities()
-        var count = 0
-
+            //Use coroutine for large data insertion
             GlobalScope.launch {
-                comoditieslist.forEach { commoditiesDaoI.save(it);println(count);count++ }
+                //Drop table commodities
+                commoditiesDaoI.deleteTable()
+                //Create table commodities empty
+                commoditiesDaoI.createTable()
+                //Fill table commoditites with https://eddb.io/archive/v6/commodities.json (~400 input)
+                comoditieslist.forEach { commoditiesDaoI.save(it)}
             }
-
         println("Commodities Saved")
         return "Saved !"
     }
