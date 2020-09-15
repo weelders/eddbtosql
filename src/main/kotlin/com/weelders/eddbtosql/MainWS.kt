@@ -46,6 +46,8 @@ class MainWS
             factionslist.forEach { factionsDaoI.save(it) }
             println("Factions saved")
         }*/
+
+        val systempoplist = updateSystemPops()
         return "Saved !"
     }
 }
