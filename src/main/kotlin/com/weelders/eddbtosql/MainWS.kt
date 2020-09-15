@@ -12,6 +12,8 @@ class MainWS
     //Use interface for DAO
     @Autowired
     lateinit var commoditiesDaoI: CommoditiesDaoI
+    @Autowired
+    lateinit var factionsDaoI: FactionsDaoI
 
 
     @GetMapping("/test")
@@ -25,7 +27,7 @@ class MainWS
     fun updateAll(): String
     {
         println("/update")
-        val comoditieslist = updateCommodities()
+        val commoditieslist = updateCommodities()
             //Use coroutine for large data insertion
             GlobalScope.launch {
                 //Drop table commodities
@@ -33,9 +35,17 @@ class MainWS
                 //Create table commodities empty
                 commoditiesDaoI.createTable()
                 //Fill table commoditites with https://eddb.io/archive/v6/commodities.json (~400 input)
-                comoditieslist.forEach { commoditiesDaoI.save(it)}
+                commoditieslist.forEach { commoditiesDaoI.save(it)}
+                println("Commodities Saved")
             }
-        println("Commodities Saved")
+
+       /* val factionslist = updateFactions()
+        GlobalScope.launch {
+            factionsDaoI.deleteTable()
+            factionsDaoI.createTable()
+            factionslist.forEach { factionsDaoI.save(it) }
+            println("Factions saved")
+        }*/
         return "Saved !"
     }
 }

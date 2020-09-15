@@ -1,6 +1,6 @@
 package com.weelders.eddbtosql
 
-data class Comodities (
+data class Commodities (
         val id : Long,
         val name : String,
         val category_id : Int,
@@ -20,4 +20,17 @@ data class Comodities (
 data class Category (
         val id : Int,
         val name : String
+)
+
+data class Factions (
+
+        val id : Long,
+        val name : String,
+        val updated_at : Int,
+        val government_id : Int,
+        val government : String,
+        val allegiance_id : Int,
+        val allegiance : String,
+        val home_system_id : Int,
+        val is_player_faction : Boolean
 )
