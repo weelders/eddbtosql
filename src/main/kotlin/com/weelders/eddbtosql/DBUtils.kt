@@ -16,7 +16,13 @@ interface FactionsDaoI
     fun createTable(): Int
     fun save(factions: Factions): Int
     fun deleteTable(): Int
+}
 
+interface SystemPopsDaoI
+{
+    fun createTable(): Int
+    fun save(systemPops: SystemPops): Int
+    fun deleteTable(): Int
 }
 
 @Repository
@@ -75,4 +81,50 @@ open class FactionsDao : FactionsDaoI
 
     //Override methode deleteTable and SQL drop table, needed for update with raw table
     override fun deleteTable() = jdbcTemplate.update("drop table factions")
+}
+
+@Repository
+open class SystemPopsDao : SystemPopsDaoI
+{
+    @Autowired
+    lateinit var jdbcTemplate: JdbcTemplate
+
+    //Override methode createTable and inject SQL create table
+    override fun createTable(): Int = jdbcTemplate.update("CREATE TABLE SystemPops(" +
+            "   id                              INTEGER NOT NULL PRIMARY KEY " +
+            "  ,edsm_id                         INTEGER" +
+            "  ,name                            VARCHAR(100) " +
+            "  ,x                               DECIMAL " +
+            "  ,y                               DECIMAL" +
+            "  ,z                               DECIMAL " +
+            "  ,population                      BIGINT " +
+            "  ,is_populated                    BOOLEAN " +
+            "  ,government_id                   INTEGER " +
+            "  ,government                      VARCHAR(100) " +
+            "  ,allegiance_id                   INTEGER " +
+            "  ,allegiance                      VARCHAR(100) " +
+            "  ,security_id                     INTEGER " +
+            "  ,security                        VARCHAR(50) " +
+            "  ,primary_economy_id              INTEGER " +
+            "  ,primary_economy                 VARCHAR(50) " +
+            "  ,power                           VARCHAR(100) " +
+            "  ,power_state                     VARCHAR(50) " +
+            "  ,power_state_id                  INTEGER " +
+            "  ,needs_permit                    BOOLEAN " +
+            "  ,updated_at                      BIGINT " +
+            "  ,simbad_ref                      VARCHAR(100) " +
+            "  ,controlling_minor_faction_id    INTEGER " +
+            "  ,controlling_minor_faction       VARCHAR(100) " +
+            "  ,reserve_type_id                 INTEGER " +
+            "  ,reserve_type                    VARCHAR(50) " +
+            "  ,ed_system_address               BIGINT " +
+            ")")
+
+    //Override methode save and inject SQL insert into with data from EDDB
+    override fun save(systemPops: SystemPops) = jdbcTemplate.update("INSERT INTO systempops (id, edsm_id, name, x, y, z, population, is_populated, government_id, government, allegiance_id, allegiance, security_id, security, primary_economy_id, primary_economy, power, power_state, power_state_id, needs_permit, updated_at, simbad_ref, controlling_minor_faction_id, controlling_minor_faction, reserve_type_id, reserve_type, ed_system_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+            systemPops.id, systemPops.edsm_id, systemPops.name, systemPops.x, systemPops.y, systemPops.z, systemPops.population, systemPops.is_populated, systemPops.government_id, systemPops.government, systemPops.allegiance_id, systemPops.allegiance, systemPops.security_id, systemPops.security, systemPops.primary_economy_id, systemPops.primary_economy, systemPops.power, systemPops.power_state, systemPops.power_state_id, systemPops.needs_permit, systemPops.updated_at, systemPops.simbad_ref, systemPops.controlling_minor_faction_id, systemPops.controlling_minor_faction, systemPops.reserve_type_id, systemPops.reserve_type, systemPops.ed_system_address)
+
+
+    //Override methode deleteTable and SQL drop table, needed for update with raw table
+    override fun deleteTable() = jdbcTemplate.update("drop table SystemPops")
 }

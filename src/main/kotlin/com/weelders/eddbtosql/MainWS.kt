@@ -16,12 +16,15 @@ class MainWS
     @Autowired
     lateinit var factionsDaoI: FactionsDaoI
 
+    @Autowired
+    lateinit var systemPopsDaoI: SystemPopsDaoI
+
 
     @GetMapping("/test")
     fun testMethode(): String
     {
         println("/test")
-        return "I'm ok !"
+        return "Server Status: OK"
     }
 
     @GetMapping("/update")
@@ -29,23 +32,34 @@ class MainWS
     {
         println("/update")
         val commoditieslist = updateCommodities()
-        //Use coroutine for large data insertion
         GlobalScope.launch {
-            //Drop table commodities
+            //Drop table Commodities
             commoditiesDaoI.deleteTable()
-            //Create table commodities empty
+            //Create table Commodities empty
             commoditiesDaoI.createTable()
-            //Fill table commoditites with https://eddb.io/archive/v6/commodities.json (~400 input)
+            //Fill table Commoditites with https://eddb.io/archive/v6/commodities.json (~400 input,~120kb)
             commoditieslist.forEach { this.launch { commoditiesDaoI.save(it) } }
         }
 
         val factionslist = updateFactions()
         GlobalScope.launch {
+            //Drop table Factions
             factionsDaoI.deleteTable()
+            //Create table Factions empty
             factionsDaoI.createTable()
+            //Fill table Factions with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/factions.json (~80k input,~15_500kb)
             factionslist.forEach { this.launch { factionsDaoI.save(it) } }
         }
-        //val systempoplist = updateSystemPops()
-        return "Saved !"
+
+        val systempoplist = updateSystemPops()
+        GlobalScope.launch {
+            //Drop table SystemPops
+            systemPopsDaoI.deleteTable()
+            //Create table SystemPops empty
+            systemPopsDaoI.createTable()
+            //Fill table SystemPops with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/systems_populated.json(~20k input,~33_500kb)
+            systempoplist.forEach { this.launch { systemPopsDaoI.save(it) } }
+        }
+        return "Dump Succefully Launched"
     }
 }
