@@ -19,6 +19,9 @@ class MainWS
     @Autowired
     lateinit var systemPopsDaoI: SystemPopsDaoI
 
+    @Autowired
+    lateinit var stationsDaoI: StationsDaoI
+
 
     @GetMapping("/test")
     fun testMethode(): String
@@ -31,7 +34,7 @@ class MainWS
     fun updateAll(): String
     {
         println("/update")
-        val commoditieslist = updateCommodities()
+        /*val commoditieslist = updateCommodities()
         GlobalScope.launch {
             //Drop table Commodities
             commoditiesDaoI.deleteTable()
@@ -59,6 +62,13 @@ class MainWS
             systemPopsDaoI.createTable()
             //Fill table SystemPops with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/systems_populated.json(~20k input,~33_500kb)
             systempoplist.forEach { this.launch { systemPopsDaoI.save(it) } }
+        }*/
+
+        val stationslist = updateStations()
+        GlobalScope.launch {
+            stationsDaoI.deleteTable()
+            stationsDaoI.createTable()
+            stationslist.forEach { this.launch { stationsDaoI.save(it) } }
         }
         return "Dump Succefully Launched"
     }
