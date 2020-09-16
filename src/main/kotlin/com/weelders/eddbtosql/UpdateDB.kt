@@ -17,3 +17,10 @@ fun updateFactions():List<Factions>
         val result = Gson().fromJson(json,Array<Factions>::class.java).toList()
         return result
 }
+
+fun updateSystemPops():List<SystemPops>
+{
+        val json = sendGetOkHttpRequest(URL_SYSTEMSPOP)
+        val result = Gson().fromJson(json,Array<SystemPops>::class.java).toList()
+        return result
+}
