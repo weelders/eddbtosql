@@ -31,6 +31,7 @@ class MainWS
         return "Server Status: OK"
     }
 
+    //Function take ~20min
     @GetMapping("/update")
     fun updateAll(): String
     {
@@ -62,7 +63,7 @@ class MainWS
             traceUpdate("Update/Factions", "Create Empty Table...")
             factionsDaoI.createTable()
             traceUpdate("Update/Factions", "Init Filling Table...")
-            //Fill table Factions with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/factions.json (~80k input,~15_500kb)
+            //Fill table Factions with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/factions.json (~70k input,~15_500kb)
             factionslist.forEach {
                 GlobalScope.launch { factionsDaoI.save(it) }
             }

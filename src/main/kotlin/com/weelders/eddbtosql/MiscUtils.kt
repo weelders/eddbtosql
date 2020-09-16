@@ -3,6 +3,8 @@ package com.weelders.eddbtosql
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.*
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 val ANSI_RESET = "\u001B[0m"
 val ANSI_GREEN = "\u001B[32m"
@@ -27,4 +29,9 @@ fun traceServerRequest(tag: String)
 {
     val timeNow = Instant.now().toEpochMilli()
     println("${convertLongToTime(timeNow)} $ANSI_RED-- SERVEUR REQUEST --$ANSI_RESET $ANSI_GREEN $tag $ANSI_RESET")
+}
+
+fun distance3DCalculation(x1: Double, y1: Double, z1: Double, x2: Double, y2: Double, z2: Double): Double
+{
+    return sqrt((x2 - x1).pow(2) + (y2 - y1).pow(2) + (z2 - z1).pow(2))
 }
