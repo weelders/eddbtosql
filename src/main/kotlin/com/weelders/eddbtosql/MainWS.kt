@@ -12,6 +12,7 @@ class MainWS
     //Use interface for DAO
     @Autowired
     lateinit var commoditiesDaoI: CommoditiesDaoI
+
     @Autowired
     lateinit var factionsDaoI: FactionsDaoI
 
@@ -28,26 +29,23 @@ class MainWS
     {
         println("/update")
         val commoditieslist = updateCommodities()
-            //Use coroutine for large data insertion
-            GlobalScope.launch {
-                //Drop table commodities
-                commoditiesDaoI.deleteTable()
-                //Create table commodities empty
-                commoditiesDaoI.createTable()
-                //Fill table commoditites with https://eddb.io/archive/v6/commodities.json (~400 input)
-                commoditieslist.forEach { commoditiesDaoI.save(it)}
-                println("Commodities Saved")
-            }
+        //Use coroutine for large data insertion
+        GlobalScope.launch {
+            //Drop table commodities
+            commoditiesDaoI.deleteTable()
+            //Create table commodities empty
+            commoditiesDaoI.createTable()
+            //Fill table commoditites with https://eddb.io/archive/v6/commodities.json (~400 input)
+            commoditieslist.forEach { this.launch { commoditiesDaoI.save(it) } }
+        }
 
-       /* val factionslist = updateFactions()
+        val factionslist = updateFactions()
         GlobalScope.launch {
             factionsDaoI.deleteTable()
             factionsDaoI.createTable()
-            factionslist.forEach { factionsDaoI.save(it) }
-            println("Factions saved")
-        }*/
-
-        val systempoplist = updateSystemPops()
+            factionslist.forEach { this.launch { factionsDaoI.save(it) } }
+        }
+        //val systempoplist = updateSystemPops()
         return "Saved !"
     }
 }
