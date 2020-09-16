@@ -2,6 +2,7 @@ package com.weelders.eddbtosql
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
@@ -19,47 +20,91 @@ class MainWS
     @Autowired
     lateinit var systemPopsDaoI: SystemPopsDaoI
 
+    @Autowired
+    lateinit var stationsDaoI: StationsDaoI
+
 
     @GetMapping("/test")
     fun testMethode(): String
     {
-        println("/test")
+        traceServerRequest("/test")
         return "Server Status: OK"
     }
 
+    //Function take ~20min
     @GetMapping("/update")
     fun updateAll(): String
     {
-        println("/update")
-        val commoditieslist = updateCommodities()
-        GlobalScope.launch {
-            //Drop table Commodities
+        traceServerRequest("/update")
+        runBlocking {
+            traceUpdate("Update/Commodities", "Starting List Building...")
+            val commoditieslist = updateCommodities()
+            traceUpdate("Update/Commodities", "List Building Finish.")
+
+
+            traceUpdate("Update/Commodities", "Drop Table...")
             commoditiesDaoI.deleteTable()
-            //Create table Commodities empty
+            traceUpdate("Update/Commodities", "Create Empty Table...")
             commoditiesDaoI.createTable()
             //Fill table Commoditites with https://eddb.io/archive/v6/commodities.json (~400 input,~120kb)
-            commoditieslist.forEach { this.launch { commoditiesDaoI.save(it) } }
-        }
+            traceUpdate("Update/Commodities", "Init Filling Table...")
+            commoditieslist.forEach {
+                GlobalScope.launch { commoditiesDaoI.save(it) }
+            }
+            traceUpdate("Update/Commodities", "Succefully Add Data to Table.")
 
-        val factionslist = updateFactions()
-        GlobalScope.launch {
-            //Drop table Factions
+
+
+            traceUpdate("Update/Factions", "Starting List Building...")
+            val factionslist = updateFactions()
+            traceUpdate("Update/Factions", "List Building Finish.")
+            traceUpdate("Update/Factions", "Drop Table...")
             factionsDaoI.deleteTable()
-            //Create table Factions empty
+            traceUpdate("Update/Factions", "Create Empty Table...")
             factionsDaoI.createTable()
-            //Fill table Factions with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/factions.json (~80k input,~15_500kb)
-            factionslist.forEach { this.launch { factionsDaoI.save(it) } }
-        }
+            traceUpdate("Update/Factions", "Init Filling Table...")
+            //Fill table Factions with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/factions.json (~70k input,~15_500kb)
+            factionslist.forEach {
+                GlobalScope.launch { factionsDaoI.save(it) }
+            }
 
-        val systempoplist = updateSystemPops()
-        GlobalScope.launch {
-            //Drop table SystemPops
+            traceUpdate("Update/Factions", "Succefully Add Data to Table.")
+
+
+
+
+            traceUpdate("Update/SystemPops", "Starting List Building...")
+            val systempoplist = updateSystemPops()
+            traceUpdate("Update/SystemPops", "List Building Finish.")
+            traceUpdate("Update/SystemPops", "Drop Table...")
             systemPopsDaoI.deleteTable()
-            //Create table SystemPops empty
+            traceUpdate("Update/SystemPops", "Create Empty Table...")
             systemPopsDaoI.createTable()
+            traceUpdate("Update/SystemPops", "Init Filling Table...")
             //Fill table SystemPops with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/systems_populated.json(~20k input,~33_500kb)
-            systempoplist.forEach { this.launch { systemPopsDaoI.save(it) } }
+            systempoplist.forEach {
+                GlobalScope.launch { systemPopsDaoI.save(it) }
+            }
+
+            traceUpdate("Update/SystemPops", "Succefully Add Data to Table.")
+
+
+
+            traceUpdate("Update/Stations", "Starting List Building...")
+            val stationslist = updateStations()
+            traceUpdate("Update/Stations", "List Building Finish.")
+            traceUpdate("Update/Stations", "Drop Table...")
+            stationsDaoI.deleteTable()
+            traceUpdate("Update/Stations", "Create Empty Table...")
+            stationsDaoI.createTable()
+            traceUpdate("Update/Stations", "Init Filling Table...")
+            //Fill table Stations with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/stations.json(~54k input,~124_000kb)
+            stationslist.forEach {
+                GlobalScope.launch { stationsDaoI.save(it) }
+            }
+            traceUpdate("Update/Stations", "Succefully Add Data to Table.")
         }
-        return "Dump Succefully Launched"
+        
+        return "Dump Succefully Done"
     }
 }

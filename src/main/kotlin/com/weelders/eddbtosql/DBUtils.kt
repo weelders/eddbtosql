@@ -1,5 +1,6 @@
 package com.weelders.eddbtosql
 
+import com.google.gson.Gson
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
@@ -22,6 +23,13 @@ interface SystemPopsDaoI
 {
     fun createTable(): Int
     fun save(systemPops: SystemPops): Int
+    fun deleteTable(): Int
+}
+
+interface StationsDaoI
+{
+    fun createTable(): Int
+    fun save(stations: Stations): Int
     fun deleteTable(): Int
 }
 
@@ -127,4 +135,62 @@ open class SystemPopsDao : SystemPopsDaoI
 
     //Override methode deleteTable and SQL drop table, needed for update with raw table
     override fun deleteTable() = jdbcTemplate.update("drop table SystemPops")
+}
+
+@Repository
+open class StationsDao : StationsDaoI
+{
+    @Autowired
+    lateinit var jdbcTemplate: JdbcTemplate
+
+    //Override methode createTable and inject SQL create table
+    override fun createTable(): Int = jdbcTemplate.update("CREATE TABLE Stations (" +
+            "id                                     INTEGER NOT NULL PRIMARY KEY," +
+            "name                                   VARCHAR(100)," +
+            "system_id                              INTEGER," +
+            "updated_at                             BIGINT," +
+            "max_landing_pad_size                   VARCHAR(10)," +
+            "distance_to_star                       INTEGER," +
+            "government_id                          INTEGER," +
+            "government                             VARCHAR(100)," +
+            "allegiance_id                          INTEGER," +
+            "allegiance                             VARCHAR(100)," +
+            "states                                 LONGTEXT," +
+            "type_id                                INTEGER," +
+            "type                                   VARCHAR(50)," +
+            "has_blackmarket                        BOOLEAN," +
+            "has_market                             BOOLEAN," +
+            "has_refuel                             BOOLEAN," +
+            "has_repair                             BOOLEAN," +
+            "has_rearm                              BOOLEAN," +
+            "has_outfitting                         BOOLEAN," +
+            "has_shipyard                           BOOLEAN," +
+            "has_docking                            BOOLEAN," +
+            "has_commodities                        BOOLEAN," +
+            "import_commodities                     LONGTEXT," +
+            "export_commodities                     LONGTEXT," +
+            "prohibited_commodities                 LONGTEXT," +
+            "economies                              LONGTEXT," +
+            "shipyard_updated_at                    BIGINT," +
+            "outfitting_updated_at                  BIGINT," +
+            "market_updated_at                      BIGINT," +
+            "is_planetary                           BOOLEAN," +
+            "selling_ships                          LONGTEXT," +
+            "selling_modules                        LONGTEXT," +
+            "settlement_size_id                     INTEGER," +
+            "settlement_size                        VARCHAR(50)," +
+            "settlement_security_id                 INTEGER," +
+            "settlement_security                    VARCHAR(50)," +
+            "body_id                                INTEGER," +
+            "controlling_minor_faction_id           INTEGER," +
+            "ed_market_id                           BIGINT" +
+            ")")
+
+    //Override methode save and inject SQL insert into with data from EDDB
+    override fun save(stations: Stations) = jdbcTemplate.update("INSERT INTO stations (id, name, system_id, updated_at, max_landing_pad_size, distance_to_star, government_id, government, allegiance_id, allegiance, states, type_id, type, has_blackmarket, has_market, has_refuel, has_repair, has_rearm, has_outfitting, has_shipyard, has_docking, has_commodities, import_commodities, export_commodities, prohibited_commodities, economies, shipyard_updated_at, outfitting_updated_at, market_updated_at, is_planetary, selling_ships, selling_modules, settlement_size_id, settlement_size, settlement_security_id, settlement_security, body_id, controlling_minor_faction_id, ed_market_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+            stations.id, stations.name, stations.system_id, stations.updated_at, stations.max_landing_pad_size, stations.distance_to_star, stations.government_id, stations.government, stations.allegiance_id, stations.allegiance, Gson().toJson(stations.states), stations.type_id, stations.type, stations.has_blackmarket, stations.has_market, stations.has_refuel, stations.has_repair, stations.has_rearm, stations.has_outfitting, stations.has_shipyard, stations.has_docking, stations.has_commodities, Gson().toJson(stations.import_commodities), Gson().toJson(stations.export_commodities), Gson().toJson(stations.prohibited_commodities), Gson().toJson(stations.economies), stations.shipyard_updated_at, stations.outfitting_updated_at, stations.market_updated_at, stations.is_planetary, Gson().toJson(stations.selling_ships), Gson().toJson(stations.selling_modules), stations.settlement_size_id, stations.settlement_size, stations.settlement_security_id, stations.settlement_security, stations.body_id, stations.controlling_minor_faction_id, stations.ed_market_id)
+
+
+    //Override methode deleteTable and SQL drop table, needed for update with raw table
+    override fun deleteTable() = jdbcTemplate.update("drop table stations")
 }
