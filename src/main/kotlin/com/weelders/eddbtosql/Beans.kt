@@ -1,5 +1,9 @@
 package com.weelders.eddbtosql
 
+/*--------------------------------------------*/
+/*--COMMODITIES--*/
+/*--------------------------------------------*/
+
 data class Commodities(
         val id: Long,
         val name: String,
@@ -22,7 +26,9 @@ data class Category(
         val name: String
 )
 
-///////////////////////////////////////////////////////
+/*--------------------------------------------*/
+/*--FACTIONS--*/
+/*--------------------------------------------*/
 
 data class Factions(
 
@@ -37,7 +43,9 @@ data class Factions(
         val is_player_faction: Boolean
 )
 
-///////////////////////////////////////////////////////
+/*--------------------------------------------*/
+/*--SYSTEM POP--*/
+/*--------------------------------------------*/
 
 
 data class States(
@@ -75,29 +83,31 @@ data class SystemPops(
         val population: Long,
         val is_populated: Boolean,
         val government_id: Int,
-        val government: String,
+        val government: String?,
         val allegiance_id: Int,
-        val allegiance: String,
+        val allegiance: String?,
         //val states : List<States>,
         val security_id: Int,
-        val security: String,
+        val security: String?,
         val primary_economy_id: Int,
-        val primary_economy: String,
-        val power: String,
-        val power_state: String,
-        val power_state_id: Int,
+        val primary_economy: String?,
+        val power: String?,
+        val power_state: String?,
+        val power_state_id: Int?,
         val needs_permit: Boolean,
         val updated_at: Long,
         val simbad_ref: String,
         val controlling_minor_faction_id: Int,
-        val controlling_minor_faction: String,
+        val controlling_minor_faction: String?,
         val reserve_type_id: Int,
-        val reserve_type: String,
+        val reserve_type: String?,
         // val minor_faction_presences : List<Minor_faction_presences>,
         val ed_system_address: Long
 )
 
-///////////////////////////////////////////////////////
+/*--------------------------------------------*/
+/*--STATIONS--*/
+/*--------------------------------------------*/
 
 data class Stations(
 

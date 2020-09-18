@@ -10,6 +10,7 @@ fun updateCommodities(): List<Commodities>
     return result
 }
 
+//Get Factions list from https://eddb.io/archive/v6/factions.json /!\HUGE JSON/!\
 fun updateFactions(): List<Factions>
 {
     val json = sendGetOkHttpRequest(URL_FACTIONS)
@@ -17,6 +18,7 @@ fun updateFactions(): List<Factions>
     return result
 }
 
+//Get SystemPops List from https://eddb.io/archive/v6/systems_populated.json /!\HUGE JSON/!\
 fun updateSystemPops(): List<SystemPops>
 {
     val json = sendGetOkHttpRequest(URL_SYSTEMSPOP)
@@ -24,6 +26,7 @@ fun updateSystemPops(): List<SystemPops>
     return result
 }
 
+//Get Stations list from https://eddb.io/archive/v6/stations.json /!\HUGE JSON/!\
 fun updateStations(): List<Stations>
 {
     val json = sendGetOkHttpRequest(URL_STATIONS)

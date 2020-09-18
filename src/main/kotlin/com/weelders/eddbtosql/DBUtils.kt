@@ -3,7 +3,9 @@ package com.weelders.eddbtosql
 import com.google.gson.Gson
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
+import java.sql.ResultSet
 
 interface CommoditiesDaoI
 {
@@ -24,6 +26,7 @@ interface SystemPopsDaoI
     fun createTable(): Int
     fun save(systemPops: SystemPops): Int
     fun deleteTable(): Int
+    fun getListNames(): List<String>
 }
 
 interface StationsDaoI
@@ -97,6 +100,38 @@ open class SystemPopsDao : SystemPopsDaoI
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
 
+    val systemPopsRowMapper = RowMapper { it: ResultSet, rowNum: Int ->
+        SystemPops(
+                it.getInt("id"),
+                it.getInt("edsm_id"),
+                it.getString("name"),
+                it.getDouble("x"),
+                it.getDouble("y"),
+                it.getDouble("z"),
+                it.getLong("population"),
+                it.getBoolean("is_populated"),
+                it.getInt("government_id"),
+                it.getString("government"),
+                it.getInt("allegiance_id"),
+                it.getString("allegiance"),
+                it.getInt("security_id"),
+                it.getString("security"),
+                it.getInt("primary_economy_id"),
+                it.getString("primary_economy"),
+                it.getString("power"),
+                it.getString("power_state"),
+                it.getInt("power_state_id"),
+                it.getBoolean("needs_permit"),
+                it.getLong("updated_at"),
+                it.getString("simbad_ref"),
+                it.getInt("controlling_minor_faction_id"),
+                it.getString("controlling_minor_faction"),
+                it.getInt("reserve_type_id"),
+                it.getString("reserve_type"),
+                it.getLong("ed_system_address")
+        )
+    }
+
     //Override methode createTable and inject SQL create table
     override fun createTable(): Int = jdbcTemplate.update("CREATE TABLE SystemPops(" +
             "   id                              INTEGER NOT NULL PRIMARY KEY " +
@@ -135,6 +170,16 @@ open class SystemPopsDao : SystemPopsDaoI
 
     //Override methode deleteTable and SQL drop table, needed for update with raw table
     override fun deleteTable() = jdbcTemplate.update("drop table SystemPops")
+
+    //Todo remove this and make a full version & return a list String only
+    override fun getListNames(): List<String>
+    {
+        val list = jdbcTemplate.query("SELECT * FROM systempops", systemPopsRowMapper)
+        val listReturned = mutableListOf<String>()
+        list.forEach { listReturned.add(it.name) }
+        return listReturned
+    }
+
 }
 
 @Repository

@@ -1,5 +1,9 @@
 package com.weelders.eddbtosql
 
+/*--------------------------------------------*/
+/*--URL--*/
+/*--------------------------------------------*/
+
 const val URL_BASE = "https://eddb.io/archive/v6/"
 const val URL_COMMODITIES = "${URL_BASE}commodities.json"
 const val URL_STATIONS = "${URL_BASE}stations.json"

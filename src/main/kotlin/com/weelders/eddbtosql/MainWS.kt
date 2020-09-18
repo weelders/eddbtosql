@@ -23,7 +23,7 @@ class MainWS
     @Autowired
     lateinit var stationsDaoI: StationsDaoI
 
-
+    //Ping server
     @GetMapping("/test")
     fun testMethode(): String
     {
@@ -31,7 +31,7 @@ class MainWS
         return "Server Status: OK"
     }
 
-    //Function take ~20min
+    //Get informations from EDDB and push them in DB, /!\TAKE ~20min/!\
     @GetMapping("/update")
     fun updateAll(): String
     {
@@ -63,7 +63,7 @@ class MainWS
             traceUpdate("Update/Factions", "Create Empty Table...")
             factionsDaoI.createTable()
             traceUpdate("Update/Factions", "Init Filling Table...")
-            //Fill table Factions with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/factions.json (~70k input,~15_500kb)
+            //Fill table Factions with /!\HUGE JSON/!\ https://eddb.io/archive/v6/factions.json (~70k input,~15_500kb)
             factionslist.forEach {
                 GlobalScope.launch { factionsDaoI.save(it) }
             }
@@ -81,7 +81,7 @@ class MainWS
             traceUpdate("Update/SystemPops", "Create Empty Table...")
             systemPopsDaoI.createTable()
             traceUpdate("Update/SystemPops", "Init Filling Table...")
-            //Fill table SystemPops with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/systems_populated.json(~20k input,~33_500kb)
+            //Fill table SystemPops with /!\HUGE JSON/!\ https://eddb.io/archive/v6/systems_populated.json(~20k input,~33_500kb)
             systempoplist.forEach {
                 GlobalScope.launch { systemPopsDaoI.save(it) }
             }
@@ -98,13 +98,27 @@ class MainWS
             traceUpdate("Update/Stations", "Create Empty Table...")
             stationsDaoI.createTable()
             traceUpdate("Update/Stations", "Init Filling Table...")
-            //Fill table Stations with /!\HUDGE JSON/!\ https://eddb.io/archive/v6/stations.json(~54k input,~124_000kb)
+            //Fill table Stations with /!\HUGE JSON/!\ https://eddb.io/archive/v6/stations.json(~54k input,~124_000kb)
             stationslist.forEach {
                 GlobalScope.launch { stationsDaoI.save(it) }
             }
             traceUpdate("Update/Stations", "Succefully Add Data to Table.")
         }
-        
+
         return "Dump Succefully Done"
+    }
+
+    //Return an List String of SystemsNames
+    @GetMapping("/getSystemsNames")
+    fun getSystemsNames(): List<String>
+    {
+        traceServerRequest("/getSystemsNames")
+        return systemPopsDaoI.getListNames()
+    }
+
+    @GetMapping("/getDistance")
+    fun getDistanceByNames()
+    {
+        //Todo return an int and get 2 names
     }
 }
