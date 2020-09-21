@@ -138,9 +138,9 @@ open class SystemPopsDao : SystemPopsDaoI
             "   id                              INTEGER NOT NULL PRIMARY KEY " +
             "  ,edsm_id                         INTEGER" +
             "  ,name                            VARCHAR(100) " +
-            "  ,x                               DECIMAL " +
-            "  ,y                               DECIMAL" +
-            "  ,z                               DECIMAL " +
+            "  ,x                               DECIMAL(9,3) " +
+            "  ,y                               DECIMAL(9,3) " +
+            "  ,z                               DECIMAL(9,3) " +
             "  ,population                      BIGINT " +
             "  ,is_populated                    BOOLEAN " +
             "  ,government_id                   INTEGER " +
