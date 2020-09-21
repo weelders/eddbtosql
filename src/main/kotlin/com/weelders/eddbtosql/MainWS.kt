@@ -118,16 +118,20 @@ class MainWS
         return systemPopsDaoI.getListNames()
     }
 
+    //Get 2 names and Return Distance (double) between 2 Systems
     @GetMapping("/getDistance")
     fun getDistanceByNames(@RequestParam name1: String, @RequestParam name2: String): Any
     {
         traceServerRequest("/getDistance?name1=$name1&name2=$name2")
         try
         {
+            //Get System 1 by this name
             val systemPops1 = systemPopsDaoI.getSystemByName(userInputCheck(name1))
+            //Get System 2 by this name
             val systemPops2 = systemPopsDaoI.getSystemByName(userInputCheck(name2))
             if (systemPops1 != null && systemPops2 != null)
             {
+                //Return double distance in "xxxx,xx" format
                 return round(distance3DCalculation(systemPops1.x, systemPops1.y, systemPops1.z, systemPops2.x, systemPops2.y, systemPops2.z) * 10) / 10
             }
             else return "Error with '$name1' or '$name2', please try again"
