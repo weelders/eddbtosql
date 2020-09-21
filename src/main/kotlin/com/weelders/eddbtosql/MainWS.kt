@@ -132,7 +132,7 @@ class MainWS
             if (systemPops1 != null && systemPops2 != null)
             {
                 //Return double distance in "xxxx,xx" format
-                return round(distance3DCalculation(systemPops1.x, systemPops1.y, systemPops1.z, systemPops2.x, systemPops2.y, systemPops2.z) * 10) / 10
+                return round(distance3DCalculation(systemPops1.x, systemPops1.y, systemPops1.z, systemPops2.x, systemPops2.y, systemPops2.z) * 100) / 100
             }
             else return "Error with '$name1' or '$name2', please try again"
         }
@@ -141,5 +141,30 @@ class MainWS
             e.printStackTrace()
             return "Error with '$name1' or '$name2', please try again"
         }
+    }
+
+    //TODO need optimisation, too slow when distance > 20
+    @GetMapping("/getShips")
+    fun getShips(@RequestParam name: String, @RequestParam distance: Int, @RequestParam ship: String): Any
+    {
+        traceServerRequest("/getDistance?name=$name&distance=$distance&ship=$ship")
+        //Get all systems where distance < $distance around $name
+        val listSystem = systemPopsDaoI.getSystemsByDistance(name, distance)
+        var listComplexeStations = mutableListOf<ComplexeStations>()
+
+        //For each system in systemList, add him into listComplexeStation if has_Docking && sell ships
+        listSystem.forEach {
+            var listStations = mutableListOf<Stations>()
+            stationsDaoI.getStationsBySystemId(it.systemPops.id).forEach {
+                if (it.has_docking && it.selling_ships.isNotEmpty()) listStations.add(it)
+            }
+            listStations = listStations.filter { it.selling_ships.any { it == ship } }.toMutableList()
+            if (listStations.size != 0)
+            {
+                listComplexeStations.add(ComplexeStations(it.systemPops, listStations))
+            }
+        }
+        traceUpdate("/getShips", "Return ${listComplexeStations.size} result")
+        return listComplexeStations
     }
 }
