@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
+import kotlin.math.round
 
 interface CommoditiesDaoI
 {
@@ -28,6 +29,7 @@ interface SystemPopsDaoI
     fun deleteTable(): Int
     fun getListNames(): List<String>
     fun getSystemByName(name: String): SystemPops?
+    fun getSystemsByDistance(name: String, distance: Int): List<SystemPopsDistance>
 }
 
 interface StationsDaoI
@@ -184,6 +186,15 @@ open class SystemPopsDao : SystemPopsDaoI
     override fun getSystemByName(name: String): SystemPops?
     {
         return jdbcTemplate.queryForObject("SELECT * FROM systempops WHERE name = '$name'", systemPopsRowMapper)
+    }
+
+    override fun getSystemsByDistance(name: String, distance: Int): List<SystemPopsDistance>
+    {
+        val focusSystem = getSystemByName(name) ?: throw Exception("System Not exist")
+        val listSystem = jdbcTemplate.query("SELECT * FROM systempops", systemPopsRowMapper)
+        var list = mutableListOf<SystemPopsDistance>()
+        listSystem.forEach { if ((round(distance3DCalculation(focusSystem.x, focusSystem.y, focusSystem.z, it.x, it.y, it.z) * 100) / 100) <= distance.toDouble()) list.add(SystemPopsDistance(it, (round(distance3DCalculation(focusSystem.x, focusSystem.y, focusSystem.z, it.x, it.y, it.z) * 100) / 100))) }
+        return list.sortedBy { it.distance }
     }
 
 }

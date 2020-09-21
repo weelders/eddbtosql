@@ -132,7 +132,7 @@ class MainWS
             if (systemPops1 != null && systemPops2 != null)
             {
                 //Return double distance in "xxxx,xx" format
-                return round(distance3DCalculation(systemPops1.x, systemPops1.y, systemPops1.z, systemPops2.x, systemPops2.y, systemPops2.z) * 10) / 10
+                return round(distance3DCalculation(systemPops1.x, systemPops1.y, systemPops1.z, systemPops2.x, systemPops2.y, systemPops2.z) * 100) / 100
             }
             else return "Error with '$name1' or '$name2', please try again"
         }
@@ -141,5 +141,12 @@ class MainWS
             e.printStackTrace()
             return "Error with '$name1' or '$name2', please try again"
         }
+    }
+
+    @GetMapping("/getShips")
+    fun getShips(@RequestParam name: String, @RequestParam distance: Int): List<SystemPopsDistance>
+    {
+        traceServerRequest("/getDistance?name=$name&distance=$distance")
+        return systemPopsDaoI.getSystemsByDistance(name, distance)
     }
 }

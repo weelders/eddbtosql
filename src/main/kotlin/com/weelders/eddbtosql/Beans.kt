@@ -105,6 +105,11 @@ data class SystemPops(
         val ed_system_address: Long
 )
 
+data class SystemPopsDistance(
+        val systemPops: SystemPops,
+        val distance: Double
+)
+
 /*--------------------------------------------*/
 /*--STATIONS--*/
 /*--------------------------------------------*/
