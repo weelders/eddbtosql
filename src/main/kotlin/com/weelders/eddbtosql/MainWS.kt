@@ -143,21 +143,28 @@ class MainWS
         }
     }
 
+    //TODO need optimisation, too slow when distance > 20
     @GetMapping("/getShips")
     fun getShips(@RequestParam name: String, @RequestParam distance: Int, @RequestParam ship: String): Any
     {
         traceServerRequest("/getDistance?name=$name&distance=$distance&ship=$ship")
+        //Get all systems where distance < $distance around $name
         val listSystem = systemPopsDaoI.getSystemsByDistance(name, distance)
-        var listStations = mutableListOf<Stations>()
         var listComplexeStations = mutableListOf<ComplexeStations>()
 
+        //For each system in systemList, add him into listComplexeStation if has_Docking && sell ships
         listSystem.forEach {
+            var listStations = mutableListOf<Stations>()
             stationsDaoI.getStationsBySystemId(it.systemPops.id).forEach {
                 if (it.has_docking && it.selling_ships.isNotEmpty()) listStations.add(it)
             }
+            listStations = listStations.filter { it.selling_ships.any { it == ship } }.toMutableList()
+            if (listStations.size != 0)
+            {
+                listComplexeStations.add(ComplexeStations(it.systemPops, listStations))
+            }
         }
-        listStations = listStations.filter { it.selling_ships.any { it == ship } }.toMutableList()
-        traceUpdate("/getShips", "Return ${listStations.size} result")
-        return listStations
+        traceUpdate("/getShips", "Return ${listComplexeStations.size} result")
+        return listComplexeStations
     }
 }
