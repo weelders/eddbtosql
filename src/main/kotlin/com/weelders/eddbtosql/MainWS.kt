@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import kotlin.math.round
 
 @RestController
 class MainWS
@@ -120,13 +121,21 @@ class MainWS
     @GetMapping("/getDistance")
     fun getDistanceByNames(@RequestParam name1: String, @RequestParam name2: String): Any
     {
-        traceServerRequest("/getDistance")
-        val systemPops1 = systemPopsDaoI.getSystemByName(name1)
-        val systemPops2 = systemPopsDaoI.getSystemByName(name2)
-        if (systemPops1 != null && systemPops2 != null)
+        traceServerRequest("/getDistance?name1=$name1&name2=$name2")
+        try
         {
-            return distance3DCalculation(systemPops1.x, systemPops1.y, systemPops1.z, systemPops2.x, systemPops2.y, systemPops2.z)
+            val systemPops1 = systemPopsDaoI.getSystemByName(userInputCheck(name1))
+            val systemPops2 = systemPopsDaoI.getSystemByName(userInputCheck(name2))
+            if (systemPops1 != null && systemPops2 != null)
+            {
+                return round(distance3DCalculation(systemPops1.x, systemPops1.y, systemPops1.z, systemPops2.x, systemPops2.y, systemPops2.z) * 10) / 10
+            }
+            else return "Error with '$name1' or '$name2', please try again"
         }
-        else return "Erreur"
+        catch (e: Exception)
+        {
+            e.printStackTrace()
+            return "Error with '$name1' or '$name2', please try again"
+        }
     }
 }

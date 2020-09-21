@@ -46,3 +46,14 @@ fun distance3DCalculation(x1: Double, y1: Double, z1: Double, x2: Double, y2: Do
 {
     return sqrt((x2 - x1).pow(2) + (y2 - y1).pow(2) + (z2 - z1).pow(2))
 }
+
+fun userInputCheck(userInput: String): String
+{
+    val usableInput = userInput.toLowerCase().trim()
+
+    if (usableInput.isNullOrBlank())
+    {
+        throw Exception("input:'$userInput' is wrong or null")
+    }
+    return usableInput
+}
