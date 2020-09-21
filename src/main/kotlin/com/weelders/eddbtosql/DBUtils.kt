@@ -27,6 +27,7 @@ interface SystemPopsDaoI
     fun save(systemPops: SystemPops): Int
     fun deleteTable(): Int
     fun getListNames(): List<String>
+    fun getSystemByName(name: String): SystemPops?
 }
 
 interface StationsDaoI
@@ -137,9 +138,9 @@ open class SystemPopsDao : SystemPopsDaoI
             "   id                              INTEGER NOT NULL PRIMARY KEY " +
             "  ,edsm_id                         INTEGER" +
             "  ,name                            VARCHAR(100) " +
-            "  ,x                               DECIMAL " +
-            "  ,y                               DECIMAL" +
-            "  ,z                               DECIMAL " +
+            "  ,x                               DECIMAL(9,3) " +
+            "  ,y                               DECIMAL(9,3) " +
+            "  ,z                               DECIMAL(9,3) " +
             "  ,population                      BIGINT " +
             "  ,is_populated                    BOOLEAN " +
             "  ,government_id                   INTEGER " +
@@ -178,6 +179,11 @@ open class SystemPopsDao : SystemPopsDaoI
         val listReturned = mutableListOf<String>()
         list.forEach { listReturned.add(it.name) }
         return listReturned
+    }
+
+    override fun getSystemByName(name: String): SystemPops?
+    {
+        return jdbcTemplate.queryForObject("SELECT * FROM systempops WHERE name = '$name'", systemPopsRowMapper)
     }
 
 }
