@@ -5,6 +5,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -117,8 +118,15 @@ class MainWS
     }
 
     @GetMapping("/getDistance")
-    fun getDistanceByNames()
+    fun getDistanceByNames(@RequestParam name1: String, @RequestParam name2: String): Any
     {
-        //Todo return an int and get 2 names
+        traceServerRequest("/getDistance")
+        val systemPops1 = systemPopsDaoI.getSystemByName(name1)
+        val systemPops2 = systemPopsDaoI.getSystemByName(name2)
+        if (systemPops1 != null && systemPops2 != null)
+        {
+            return distance3DCalculation(systemPops1.x, systemPops1.y, systemPops1.z, systemPops2.x, systemPops2.y, systemPops2.z)
+        }
+        else return "Erreur"
     }
 }

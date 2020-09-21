@@ -27,6 +27,7 @@ interface SystemPopsDaoI
     fun save(systemPops: SystemPops): Int
     fun deleteTable(): Int
     fun getListNames(): List<String>
+    fun getSystemByName(name: String): SystemPops?
 }
 
 interface StationsDaoI
@@ -178,6 +179,11 @@ open class SystemPopsDao : SystemPopsDaoI
         val listReturned = mutableListOf<String>()
         list.forEach { listReturned.add(it.name) }
         return listReturned
+    }
+
+    override fun getSystemByName(name: String): SystemPops?
+    {
+        return jdbcTemplate.queryForObject("SELECT * FROM systempops WHERE name = '$name'", systemPopsRowMapper)
     }
 
 }
