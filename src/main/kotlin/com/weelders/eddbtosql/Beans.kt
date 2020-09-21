@@ -148,11 +148,13 @@ data class Stations(
         val is_planetary: Boolean,
         val selling_ships: List<String>,
         val selling_modules: List<Int>,
-        val settlement_size_id: String,
-        val settlement_size: String,
-        val settlement_security_id: String,
-        val settlement_security: String,
+        val settlement_size_id: String?,
+        val settlement_size: String?,
+        val settlement_security_id: String?,
+        val settlement_security: String?,
         val body_id: Int,
         val controlling_minor_faction_id: Int,
         val ed_market_id: Long
 )
+
+data class ComplexeStations(val systemPops: SystemPops, val stations: List<Stations>)

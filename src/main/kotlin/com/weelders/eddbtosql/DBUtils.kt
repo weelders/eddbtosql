@@ -37,6 +37,7 @@ interface StationsDaoI
     fun createTable(): Int
     fun save(stations: Stations): Int
     fun deleteTable(): Int
+    fun getStationsBySystemId(systemId: Int): List<Stations>
 }
 
 @Repository
@@ -205,6 +206,51 @@ open class StationsDao : StationsDaoI
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
 
+    val stationRowMapper = RowMapper { it: ResultSet, rowNum: Int ->
+        Stations(
+                it.getInt("id"),
+                it.getString("name"),
+                it.getInt("system_id"),
+                it.getLong("updated_at"),
+                it.getString("max_landing_pad_size"),
+                it.getInt("distance_to_star"),
+                it.getInt("government_id"),
+                it.getString("government"),
+                it.getInt("allegiance_id"),
+                it.getString("allegiance_id"),
+                Gson().fromJson(it.getString("states"), Array<States>::class.java).toList(),
+                it.getInt("type_id"),
+                it.getString("type"),
+                it.getBoolean("has_blackmarket"),
+                it.getBoolean("has_market"),
+                it.getBoolean("has_refuel"),
+                it.getBoolean("has_repair"),
+                it.getBoolean("has_rearm"),
+                it.getBoolean("has_outfitting"),
+                it.getBoolean("has_shipyard"),
+                it.getBoolean("has_docking"),
+                it.getBoolean("has_commodities"),
+                Gson().fromJson(it.getString("import_commodities"), Array<String>::class.java).toList(),
+                Gson().fromJson(it.getString("export_commodities"), Array<String>::class.java).toList(),
+                Gson().fromJson(it.getString("prohibited_commodities"), Array<String>::class.java).toList(),
+                Gson().fromJson(it.getString("economies"), Array<String>::class.java).toList(),
+                it.getLong("shipyard_updated_at"),
+                it.getLong("outfitting_updated_at"),
+                it.getLong("market_updated_at"),
+                it.getBoolean("is_planetary"),
+                Gson().fromJson(it.getString("selling_ships"), Array<String>::class.java).toList(),
+                Gson().fromJson(it.getString("selling_modules"), Array<Int>::class.java).toList(),
+                it.getString("settlement_size_id"),
+                it.getString("settlement_size"),
+                it.getString("settlement_security_id"),
+                it.getString("settlement_security"),
+                it.getInt("body_id"),
+                it.getInt("controlling_minor_faction_id"),
+                it.getLong("ed_market_id")
+        )
+
+    }
+
     //Override methode createTable and inject SQL create table
     override fun createTable(): Int = jdbcTemplate.update("CREATE TABLE Stations (" +
             "id                                     INTEGER NOT NULL PRIMARY KEY," +
@@ -255,4 +301,9 @@ open class StationsDao : StationsDaoI
 
     //Override methode deleteTable and SQL drop table, needed for update with raw table
     override fun deleteTable() = jdbcTemplate.update("drop table stations")
+
+    override fun getStationsBySystemId(systemId: Int): List<Stations>
+    {
+        return jdbcTemplate.query("SELECT * FROM stations WHERE system_id = '$systemId'", stationRowMapper).toList()
+    }
 }

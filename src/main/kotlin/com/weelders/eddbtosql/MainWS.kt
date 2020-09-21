@@ -144,9 +144,20 @@ class MainWS
     }
 
     @GetMapping("/getShips")
-    fun getShips(@RequestParam name: String, @RequestParam distance: Int): List<SystemPopsDistance>
+    fun getShips(@RequestParam name: String, @RequestParam distance: Int, @RequestParam ship: String): Any
     {
-        traceServerRequest("/getDistance?name=$name&distance=$distance")
-        return systemPopsDaoI.getSystemsByDistance(name, distance)
+        traceServerRequest("/getDistance?name=$name&distance=$distance&ship=$ship")
+        val listSystem = systemPopsDaoI.getSystemsByDistance(name, distance)
+        var listStations = mutableListOf<Stations>()
+        var listComplexeStations = mutableListOf<ComplexeStations>()
+
+        listSystem.forEach {
+            stationsDaoI.getStationsBySystemId(it.systemPops.id).forEach {
+                if (it.has_docking && it.selling_ships.isNotEmpty()) listStations.add(it)
+            }
+        }
+        listStations = listStations.filter { it.selling_ships.any { it == ship } }.toMutableList()
+        traceUpdate("/getShips", "Return ${listStations.size} result")
+        return listStations
     }
 }
