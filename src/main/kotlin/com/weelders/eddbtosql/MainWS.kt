@@ -4,6 +4,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.dao.IncorrectResultSizeDataAccessException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -171,16 +172,30 @@ class MainWS
 
     //TODO Add factions
     @GetMapping("/getSystem")
-    fun getSystem(@RequestParam name: String): Any
+    fun getSystem(@RequestParam name: String): Any?
     {
         traceServerRequest("/getSystem?name=$name")
-        //Check UserInput Before search
-        val verifiedName = userInputCheck(name)
-        //Get system by this name
-        val system = systemPopsDaoI.getSystemByName(verifiedName)
-        //Get all station by system_id get before
-        val stations = stationsDaoI.getStationsBySystemId(system!!.id)
-        //Return both
-        return ComplexeStations(system, stations)
+        try
+        {
+            //Check UserInput Before search
+            val verifiedName = userInputCheck(name)
+            //Get system by this name
+            val system = systemPopsDaoI.getSystemByName(verifiedName)
+            //Get all station by system_id get before
+            val stations = stationsDaoI.getStationsBySystemId(system!!.id)
+            //Return both
+            traceUpdate("/getSystem", "Result found for ${system.name} and this ${stations.size} stations.")
+            return ComplexeStations(system, stations)
+        }
+        catch (e: IncorrectResultSizeDataAccessException)
+        {
+            traceUpdate("/getSystem", "Name '$name' is incorrect or data doesnt exist.")
+            return "Name '$name' is incorrect or data doesnt exist."
+        }
+        catch (e: Exception)
+        {
+            e.printStackTrace()
+            return e.message
+        }
     }
 }
