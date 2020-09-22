@@ -165,16 +165,22 @@ class MainWS
             }
         }
         traceUpdate("/getShips", "Return ${listComplexeStations.size} result")
+        //Return a list of systems who contain a list of stations
         return listComplexeStations
     }
 
+    //TODO Add factions
     @GetMapping("/getSystem")
     fun getSystem(@RequestParam name: String): Any
     {
         traceServerRequest("/getSystem?name=$name")
+        //Check UserInput Before search
         val verifiedName = userInputCheck(name)
-        val system = systemPopsDaoI.getSystemByName(name)
+        //Get system by this name
+        val system = systemPopsDaoI.getSystemByName(verifiedName)
+        //Get all station by system_id get before
         val stations = stationsDaoI.getStationsBySystemId(system!!.id)
+        //Return both
         return ComplexeStations(system, stations)
     }
 }
