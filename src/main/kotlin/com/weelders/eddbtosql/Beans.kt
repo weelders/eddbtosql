@@ -157,4 +157,4 @@ data class Stations(
         val ed_market_id: Long
 )
 
-data class ComplexeStations(val systemPops: SystemPops, val stations: List<Stations>)
+data class ComplexeStations(val systemPops: SystemPopsDistance, val stations: List<Stations>)

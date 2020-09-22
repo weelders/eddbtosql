@@ -121,7 +121,7 @@ class MainWS
 
     //Get 2 names and Return Distance (double) between 2 Systems
     @GetMapping("/getDistance")
-    fun getDistanceByNames(@RequestParam name1: String, @RequestParam name2: String): Any
+    fun getDistanceByNames(@RequestParam name1: String, @RequestParam name2: String): Any?
     {
         traceServerRequest("/getDistance?name1=$name1&name2=$name2")
         try
@@ -137,10 +137,15 @@ class MainWS
             }
             else return "Error with '$name1' or '$name2', please try again"
         }
+        catch (e: IncorrectResultSizeDataAccessException)
+        {
+            traceUpdate("/getDistance", "Error with '$name1' or '$name2', please try again")
+            return "Name '$name1' or name '$name2' is incorrect or data doesnt exist."
+        }
         catch (e: Exception)
         {
             e.printStackTrace()
-            return "Error with '$name1' or '$name2', please try again"
+            return e.message
         }
     }
 
@@ -148,23 +153,28 @@ class MainWS
     @GetMapping("/getShips")
     fun getShips(@RequestParam name: String, @RequestParam distance: Int, @RequestParam ship: String): Any
     {
-        traceServerRequest("/getDistance?name=$name&distance=$distance&ship=$ship")
+        traceServerRequest("/getShips?name=$name&distance=$distance&ship=$ship")
         //Get all systems where distance < $distance around $name
         val listSystem = systemPopsDaoI.getSystemsByDistance(name, distance)
         var listComplexeStations = mutableListOf<ComplexeStations>()
 
         //For each system in systemList, add him into listComplexeStation if has_Docking && sell ships
-        listSystem.forEach {
-            var listStations = mutableListOf<Stations>()
-            stationsDaoI.getStationsBySystemId(it.systemPops.id).forEach {
-                if (it.has_docking && it.selling_ships.isNotEmpty()) listStations.add(it)
-            }
-            listStations = listStations.filter { it.selling_ships.any { it == ship } }.toMutableList()
-            if (listStations.size != 0)
-            {
-                listComplexeStations.add(ComplexeStations(it.systemPops, listStations))
+        runBlocking {
+            listSystem.forEach {
+                GlobalScope.launch {
+                    var listStations = mutableListOf<Stations>()
+                    stationsDaoI.getStationsBySystemId(it.systemPops.id).forEach {
+                        if (it.has_docking && it.selling_ships.isNotEmpty()) listStations.add(it)
+                    }
+                    listStations = listStations.filter { it.selling_ships.any { it == ship } }.toMutableList()
+                    if (listStations.size != 0)
+                    {
+                        listComplexeStations.add(ComplexeStations(it, listStations))
+                    }
+                }.join()
             }
         }
+
         traceUpdate("/getShips", "Return ${listComplexeStations.size} result")
         //Return a list of systems who contain a list of stations
         return listComplexeStations
@@ -185,7 +195,7 @@ class MainWS
             val stations = stationsDaoI.getStationsBySystemId(system!!.id)
             //Return both
             traceUpdate("/getSystem", "Result found for ${system.name} and this ${stations.size} stations.")
-            return ComplexeStations(system, stations)
+            return ComplexeStations(SystemPopsDistance(system, 0.0), stations)
         }
         catch (e: IncorrectResultSizeDataAccessException)
         {
