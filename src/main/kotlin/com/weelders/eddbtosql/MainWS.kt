@@ -167,4 +167,14 @@ class MainWS
         traceUpdate("/getShips", "Return ${listComplexeStations.size} result")
         return listComplexeStations
     }
+
+    @GetMapping("/getSystem")
+    fun getSystem(@RequestParam name: String): Any
+    {
+        traceServerRequest("/getSystem?name=$name")
+        val verifiedName = userInputCheck(name)
+        val system = systemPopsDaoI.getSystemByName(name)
+        val stations = stationsDaoI.getStationsBySystemId(system!!.id)
+        return ComplexeStations(system, stations)
+    }
 }
