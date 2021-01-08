@@ -28,8 +28,9 @@ interface SystemPopsDaoI
     fun save(systemPops: SystemPops): Int
     fun deleteTable(): Int
     fun getListNames(): List<String>
-    fun getSystemByName(name: String): SystemPops?
+    fun getSystemByName(name: String): List<SystemPops>
     fun getSystemsByDistance(name: String, distance: Int): List<SystemPopsDistance>
+    fun getSystemShip(ship: String): List<ShipSystem>
 }
 
 interface StationsDaoI
@@ -64,8 +65,21 @@ open class CommoditiesDao : CommoditiesDaoI
             ")")
 
     //Override methode save and inject SQL insert into with data from EDDB
-    override fun save(commodities: Commodities) = jdbcTemplate.update("insert into commodities(id,name,category_id,average_price,is_rare,max_buy_price,max_sell_price,min_buy_price,min_sell_price,buy_price_lower_average,sell_price_upper_average,is_non_marketable,ed_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            commodities.id, commodities.name, commodities.category_id, commodities.average_price, commodities.is_rare, commodities.max_buy_price, commodities.max_sell_price, commodities.min_buy_price, commodities.min_sell_price, commodities.buy_price_lower_average, commodities.sell_price_upper_average, commodities.is_non_marketable, commodities.ed_id)
+    override fun save(commodities: Commodities) =
+        jdbcTemplate.update("insert into commodities(id,name,category_id,average_price,is_rare,max_buy_price,max_sell_price,min_buy_price,min_sell_price,buy_price_lower_average,sell_price_upper_average,is_non_marketable,ed_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            commodities.id,
+            commodities.name,
+            commodities.category_id,
+            commodities.average_price,
+            commodities.is_rare,
+            commodities.max_buy_price,
+            commodities.max_sell_price,
+            commodities.min_buy_price,
+            commodities.min_sell_price,
+            commodities.buy_price_lower_average,
+            commodities.sell_price_upper_average,
+            commodities.is_non_marketable,
+            commodities.ed_id)
 
     //Override methode deleteTable and SQL drop table, needed for update with raw table
     override fun deleteTable() = jdbcTemplate.update("drop table commodities")
@@ -91,8 +105,17 @@ open class FactionsDao : FactionsDaoI
             ")")
 
     //Override methode save and inject SQL insert into with data from EDDB
-    override fun save(factions: Factions) = jdbcTemplate.update("insert into factions(id,name,updated_at,government_id,government,allegiance_id,allegiance,home_system_id,is_player_faction) values (?,?,?,?,?,?,?,?,?);",
-            factions.id, factions.name, factions.updated_at, factions.government_id, factions.government, factions.allegiance_id, factions.allegiance, factions.home_system_id, factions.is_player_faction)
+    override fun save(factions: Factions) =
+        jdbcTemplate.update("insert into factions(id,name,updated_at,government_id,government,allegiance_id,allegiance,home_system_id,is_player_faction) values (?,?,?,?,?,?,?,?,?);",
+            factions.id,
+            factions.name,
+            factions.updated_at,
+            factions.government_id,
+            factions.government,
+            factions.allegiance_id,
+            factions.allegiance,
+            factions.home_system_id,
+            factions.is_player_faction)
 
     //Override methode deleteTable and SQL drop table, needed for update with raw table
     override fun deleteTable() = jdbcTemplate.update("drop table factions")
@@ -106,33 +129,45 @@ open class SystemPopsDao : SystemPopsDaoI
 
     val systemPopsRowMapper = RowMapper { it: ResultSet, rowNum: Int ->
         SystemPops(
-                it.getInt("id"),
-                it.getInt("edsm_id"),
-                it.getString("name"),
-                it.getDouble("x"),
-                it.getDouble("y"),
-                it.getDouble("z"),
-                it.getLong("population"),
-                it.getBoolean("is_populated"),
-                it.getInt("government_id"),
-                it.getString("government"),
-                it.getInt("allegiance_id"),
-                it.getString("allegiance"),
-                it.getInt("security_id"),
-                it.getString("security"),
-                it.getInt("primary_economy_id"),
-                it.getString("primary_economy"),
-                it.getString("power"),
-                it.getString("power_state"),
-                it.getInt("power_state_id"),
-                it.getBoolean("needs_permit"),
-                it.getLong("updated_at"),
-                it.getString("simbad_ref"),
-                it.getInt("controlling_minor_faction_id"),
-                it.getString("controlling_minor_faction"),
-                it.getInt("reserve_type_id"),
-                it.getString("reserve_type"),
-                it.getLong("ed_system_address")
+            it.getInt("id"),
+            it.getInt("edsm_id"),
+            it.getString("name"),
+            it.getDouble("x"),
+            it.getDouble("y"),
+            it.getDouble("z"),
+            it.getLong("population"),
+            it.getBoolean("is_populated"),
+            it.getInt("government_id"),
+            it.getString("government"),
+            it.getInt("allegiance_id"),
+            it.getString("allegiance"),
+            it.getInt("security_id"),
+            it.getString("security"),
+            it.getInt("primary_economy_id"),
+            it.getString("primary_economy"),
+            it.getString("power"),
+            it.getString("power_state"),
+            it.getInt("power_state_id"),
+            it.getBoolean("needs_permit"),
+            it.getLong("updated_at"),
+            it.getString("simbad_ref"),
+            it.getInt("controlling_minor_faction_id"),
+            it.getString("controlling_minor_faction"),
+            it.getInt("reserve_type_id"),
+            it.getString("reserve_type"),
+            it.getLong("ed_system_address")
+        )
+    }
+
+    val TestRowMapper = RowMapper { it: ResultSet, rowNum: Int ->
+        ShipSystem(
+            it.getString("name_system"),
+            it.getString("name_station"),
+            it.getDouble("x"),
+            it.getDouble("y"),
+            it.getDouble("z"),
+            it.getInt("distance_to_star"),
+            it.getString("max_landing_pad_size")
         )
     }
 
@@ -168,8 +203,35 @@ open class SystemPopsDao : SystemPopsDaoI
             ")")
 
     //Override methode save and inject SQL insert into with data from EDDB
-    override fun save(systemPops: SystemPops) = jdbcTemplate.update("INSERT INTO systempops (id, edsm_id, name, x, y, z, population, is_populated, government_id, government, allegiance_id, allegiance, security_id, security, primary_economy_id, primary_economy, power, power_state, power_state_id, needs_permit, updated_at, simbad_ref, controlling_minor_faction_id, controlling_minor_faction, reserve_type_id, reserve_type, ed_system_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
-            systemPops.id, systemPops.edsm_id, systemPops.name, systemPops.x, systemPops.y, systemPops.z, systemPops.population, systemPops.is_populated, systemPops.government_id, systemPops.government, systemPops.allegiance_id, systemPops.allegiance, systemPops.security_id, systemPops.security, systemPops.primary_economy_id, systemPops.primary_economy, systemPops.power, systemPops.power_state, systemPops.power_state_id, systemPops.needs_permit, systemPops.updated_at, systemPops.simbad_ref, systemPops.controlling_minor_faction_id, systemPops.controlling_minor_faction, systemPops.reserve_type_id, systemPops.reserve_type, systemPops.ed_system_address)
+    override fun save(systemPops: SystemPops) =
+        jdbcTemplate.update("INSERT INTO systempops (id, edsm_id, name, x, y, z, population, is_populated, government_id, government, allegiance_id, allegiance, security_id, security, primary_economy_id, primary_economy, power, power_state, power_state_id, needs_permit, updated_at, simbad_ref, controlling_minor_faction_id, controlling_minor_faction, reserve_type_id, reserve_type, ed_system_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+            systemPops.id,
+            systemPops.edsm_id,
+            systemPops.name,
+            systemPops.x,
+            systemPops.y,
+            systemPops.z,
+            systemPops.population,
+            systemPops.is_populated,
+            systemPops.government_id,
+            systemPops.government,
+            systemPops.allegiance_id,
+            systemPops.allegiance,
+            systemPops.security_id,
+            systemPops.security,
+            systemPops.primary_economy_id,
+            systemPops.primary_economy,
+            systemPops.power,
+            systemPops.power_state,
+            systemPops.power_state_id,
+            systemPops.needs_permit,
+            systemPops.updated_at,
+            systemPops.simbad_ref,
+            systemPops.controlling_minor_faction_id,
+            systemPops.controlling_minor_faction,
+            systemPops.reserve_type_id,
+            systemPops.reserve_type,
+            systemPops.ed_system_address)
 
 
     //Override methode deleteTable and SQL drop table, needed for update with raw table
@@ -184,9 +246,10 @@ open class SystemPopsDao : SystemPopsDaoI
         return listReturned
     }
 
-    override fun getSystemByName(name: String): SystemPops?
+    override fun getSystemByName(name: String): List<SystemPops>
     {
-        return jdbcTemplate.queryForObject("SELECT * FROM systempops WHERE name = '$name'", systemPopsRowMapper)
+        val listSystem = jdbcTemplate.query("SELECT * FROM systempops WHERE name LIKE '%$name%'", systemPopsRowMapper)
+        return listSystem.toList()
     }
 
     override fun getSystemsByDistance(name: String, distance: Int): List<SystemPopsDistance>
@@ -194,8 +257,24 @@ open class SystemPopsDao : SystemPopsDaoI
         val focusSystem = getSystemByName(name) ?: throw Exception("System Not exist")
         val listSystem = jdbcTemplate.query("SELECT * FROM systempops", systemPopsRowMapper)
         var list = mutableListOf<SystemPopsDistance>()
-        listSystem.forEach { if ((round(distance3DCalculation(focusSystem.x, focusSystem.y, focusSystem.z, it.x, it.y, it.z) * 100) / 100) <= distance.toDouble()) list.add(SystemPopsDistance(it, (round(distance3DCalculation(focusSystem.x, focusSystem.y, focusSystem.z, it.x, it.y, it.z) * 100) / 100))) }
+        listSystem.forEach {
+            if ((round(distance3DCalculation(focusSystem[0].x,
+                    focusSystem[0].y,
+                    focusSystem[0].z,
+                    it.x,
+                    it.y,
+                    it.z) * 100) / 100) <= distance.toDouble()
+            ) list.add(SystemPopsDistance(it, (round(distance3DCalculation(focusSystem[0].x, focusSystem[0].y, focusSystem[0].z, it.x, it.y, it.z) * 100) / 100)))
+        }
         return list.sortedBy { it.distance }
+    }
+
+    override fun getSystemShip(ship: String): List<ShipSystem>
+    {
+        val listSystem =
+            jdbcTemplate.query("SELECT systempops.name as name_system,stations.name as name_station,systempops.x,systempops.y,systempops.z,stations.distance_to_star,stations.max_landing_pad_size FROM systempops INNER JOIN stations WHERE systempops.id = stations.system_id AND stations.selling_ships LIKE \"%$ship%\"",
+                TestRowMapper)
+        return listSystem
     }
 
 }
@@ -208,45 +287,45 @@ open class StationsDao : StationsDaoI
 
     val stationRowMapper = RowMapper { it: ResultSet, rowNum: Int ->
         Stations(
-                it.getInt("id"),
-                it.getString("name"),
-                it.getInt("system_id"),
-                it.getLong("updated_at"),
-                it.getString("max_landing_pad_size"),
-                it.getInt("distance_to_star"),
-                it.getInt("government_id"),
-                it.getString("government"),
-                it.getInt("allegiance_id"),
-                it.getString("allegiance_id"),
-                Gson().fromJson(it.getString("states"), Array<States>::class.java).toList(),
-                it.getInt("type_id"),
-                it.getString("type"),
-                it.getBoolean("has_blackmarket"),
-                it.getBoolean("has_market"),
-                it.getBoolean("has_refuel"),
-                it.getBoolean("has_repair"),
-                it.getBoolean("has_rearm"),
-                it.getBoolean("has_outfitting"),
-                it.getBoolean("has_shipyard"),
-                it.getBoolean("has_docking"),
-                it.getBoolean("has_commodities"),
-                Gson().fromJson(it.getString("import_commodities"), Array<String>::class.java).toList(),
-                Gson().fromJson(it.getString("export_commodities"), Array<String>::class.java).toList(),
-                Gson().fromJson(it.getString("prohibited_commodities"), Array<String>::class.java).toList(),
-                Gson().fromJson(it.getString("economies"), Array<String>::class.java).toList(),
-                it.getLong("shipyard_updated_at"),
-                it.getLong("outfitting_updated_at"),
-                it.getLong("market_updated_at"),
-                it.getBoolean("is_planetary"),
-                Gson().fromJson(it.getString("selling_ships"), Array<String>::class.java).toList(),
-                Gson().fromJson(it.getString("selling_modules"), Array<Int>::class.java).toList(),
-                it.getString("settlement_size_id"),
-                it.getString("settlement_size"),
-                it.getString("settlement_security_id"),
-                it.getString("settlement_security"),
-                it.getInt("body_id"),
-                it.getInt("controlling_minor_faction_id"),
-                it.getLong("ed_market_id")
+            it.getInt("id"),
+            it.getString("name"),
+            it.getInt("system_id"),
+            it.getLong("updated_at"),
+            it.getString("max_landing_pad_size"),
+            it.getInt("distance_to_star"),
+            it.getInt("government_id"),
+            it.getString("government"),
+            it.getInt("allegiance_id"),
+            it.getString("allegiance_id"),
+            Gson().fromJson(it.getString("states"), Array<States>::class.java).toList(),
+            it.getInt("type_id"),
+            it.getString("type"),
+            it.getBoolean("has_blackmarket"),
+            it.getBoolean("has_market"),
+            it.getBoolean("has_refuel"),
+            it.getBoolean("has_repair"),
+            it.getBoolean("has_rearm"),
+            it.getBoolean("has_outfitting"),
+            it.getBoolean("has_shipyard"),
+            it.getBoolean("has_docking"),
+            it.getBoolean("has_commodities"),
+            Gson().fromJson(it.getString("import_commodities"), Array<String>::class.java).toList(),
+            Gson().fromJson(it.getString("export_commodities"), Array<String>::class.java).toList(),
+            Gson().fromJson(it.getString("prohibited_commodities"), Array<String>::class.java).toList(),
+            Gson().fromJson(it.getString("economies"), Array<String>::class.java).toList(),
+            it.getLong("shipyard_updated_at"),
+            it.getLong("outfitting_updated_at"),
+            it.getLong("market_updated_at"),
+            it.getBoolean("is_planetary"),
+            Gson().fromJson(it.getString("selling_ships"), Array<String>::class.java).toList(),
+            Gson().fromJson(it.getString("selling_modules"), Array<Int>::class.java).toList(),
+            it.getString("settlement_size_id"),
+            it.getString("settlement_size"),
+            it.getString("settlement_security_id"),
+            it.getString("settlement_security"),
+            it.getInt("body_id"),
+            it.getInt("controlling_minor_faction_id"),
+            it.getLong("ed_market_id")
         )
 
     }
@@ -295,8 +374,47 @@ open class StationsDao : StationsDaoI
             ")")
 
     //Override methode save and inject SQL insert into with data from EDDB
-    override fun save(stations: Stations) = jdbcTemplate.update("INSERT INTO stations (id, name, system_id, updated_at, max_landing_pad_size, distance_to_star, government_id, government, allegiance_id, allegiance, states, type_id, type, has_blackmarket, has_market, has_refuel, has_repair, has_rearm, has_outfitting, has_shipyard, has_docking, has_commodities, import_commodities, export_commodities, prohibited_commodities, economies, shipyard_updated_at, outfitting_updated_at, market_updated_at, is_planetary, selling_ships, selling_modules, settlement_size_id, settlement_size, settlement_security_id, settlement_security, body_id, controlling_minor_faction_id, ed_market_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
-            stations.id, stations.name, stations.system_id, stations.updated_at, stations.max_landing_pad_size, stations.distance_to_star, stations.government_id, stations.government, stations.allegiance_id, stations.allegiance, Gson().toJson(stations.states), stations.type_id, stations.type, stations.has_blackmarket, stations.has_market, stations.has_refuel, stations.has_repair, stations.has_rearm, stations.has_outfitting, stations.has_shipyard, stations.has_docking, stations.has_commodities, Gson().toJson(stations.import_commodities), Gson().toJson(stations.export_commodities), Gson().toJson(stations.prohibited_commodities), Gson().toJson(stations.economies), stations.shipyard_updated_at, stations.outfitting_updated_at, stations.market_updated_at, stations.is_planetary, Gson().toJson(stations.selling_ships), Gson().toJson(stations.selling_modules), stations.settlement_size_id, stations.settlement_size, stations.settlement_security_id, stations.settlement_security, stations.body_id, stations.controlling_minor_faction_id, stations.ed_market_id)
+    override fun save(stations: Stations) =
+        jdbcTemplate.update("INSERT INTO stations (id, name, system_id, updated_at, max_landing_pad_size, distance_to_star, government_id, government, allegiance_id, allegiance, states, type_id, type, has_blackmarket, has_market, has_refuel, has_repair, has_rearm, has_outfitting, has_shipyard, has_docking, has_commodities, import_commodities, export_commodities, prohibited_commodities, economies, shipyard_updated_at, outfitting_updated_at, market_updated_at, is_planetary, selling_ships, selling_modules, settlement_size_id, settlement_size, settlement_security_id, settlement_security, body_id, controlling_minor_faction_id, ed_market_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+            stations.id,
+            stations.name,
+            stations.system_id,
+            stations.updated_at,
+            stations.max_landing_pad_size,
+            stations.distance_to_star,
+            stations.government_id,
+            stations.government,
+            stations.allegiance_id,
+            stations.allegiance,
+            Gson().toJson(stations.states),
+            stations.type_id,
+            stations.type,
+            stations.has_blackmarket,
+            stations.has_market,
+            stations.has_refuel,
+            stations.has_repair,
+            stations.has_rearm,
+            stations.has_outfitting,
+            stations.has_shipyard,
+            stations.has_docking,
+            stations.has_commodities,
+            Gson().toJson(stations.import_commodities),
+            Gson().toJson(stations.export_commodities),
+            Gson().toJson(stations.prohibited_commodities),
+            Gson().toJson(stations.economies),
+            stations.shipyard_updated_at,
+            stations.outfitting_updated_at,
+            stations.market_updated_at,
+            stations.is_planetary,
+            Gson().toJson(stations.selling_ships),
+            Gson().toJson(stations.selling_modules),
+            stations.settlement_size_id,
+            stations.settlement_size,
+            stations.settlement_security_id,
+            stations.settlement_security,
+            stations.body_id,
+            stations.controlling_minor_faction_id,
+            stations.ed_market_id)
 
 
     //Override methode deleteTable and SQL drop table, needed for update with raw table
