@@ -13,6 +13,7 @@ interface CommoditiesDaoI
     fun createTable(): Int
     fun save(commodities: Commodities): Int
     fun deleteTable(): Int
+    fun resetTable(): Int
 }
 
 interface FactionsDaoI
@@ -20,6 +21,7 @@ interface FactionsDaoI
     fun createTable(): Int
     fun save(factions: Factions): Int
     fun deleteTable(): Int
+    fun resetTable(): Int
 }
 
 interface SystemPopsDaoI
@@ -28,9 +30,11 @@ interface SystemPopsDaoI
     fun save(systemPops: SystemPops): Int
     fun deleteTable(): Int
     fun getListNames(): List<String>
-    fun getSystemByName(name: String): List<SystemPops>
+    fun getSystemsByName(name: String): List<SystemPops>
+    fun getOneSystemByName(name: String): SystemPops
     fun getSystemsByDistance(name: String, distance: Int): List<SystemPopsDistance>
     fun getSystemShip(ship: String): List<ShipSystem>
+    fun resetTable(): Int
 }
 
 interface StationsDaoI
@@ -39,10 +43,11 @@ interface StationsDaoI
     fun save(stations: Stations): Int
     fun deleteTable(): Int
     fun getStationsBySystemId(systemId: Int): List<Stations>
+    fun resetTable(): Int
 }
 
 @Repository
-open class CommoditiesDao : CommoditiesDaoI
+class CommoditiesDao : CommoditiesDaoI
 {
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
@@ -83,10 +88,12 @@ open class CommoditiesDao : CommoditiesDaoI
 
     //Override methode deleteTable and SQL drop table, needed for update with raw table
     override fun deleteTable() = jdbcTemplate.update("drop table commodities")
+
+    override fun resetTable() = jdbcTemplate.update("truncate table commodities")
 }
 
 @Repository
-open class FactionsDao : FactionsDaoI
+class FactionsDao : FactionsDaoI
 {
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
@@ -119,10 +126,11 @@ open class FactionsDao : FactionsDaoI
 
     //Override methode deleteTable and SQL drop table, needed for update with raw table
     override fun deleteTable() = jdbcTemplate.update("drop table factions")
+    override fun resetTable() = jdbcTemplate.update("truncate table factions")
 }
 
 @Repository
-open class SystemPopsDao : SystemPopsDaoI
+class SystemPopsDao : SystemPopsDaoI
 {
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
@@ -246,15 +254,20 @@ open class SystemPopsDao : SystemPopsDaoI
         return listReturned
     }
 
-    override fun getSystemByName(name: String): List<SystemPops>
+    override fun getSystemsByName(name: String): List<SystemPops>
     {
         val listSystem = jdbcTemplate.query("SELECT * FROM systempops WHERE name LIKE '%$name%'", systemPopsRowMapper)
         return listSystem.toList()
     }
 
+    override fun getOneSystemByName(name: String): SystemPops
+    {
+        return jdbcTemplate.queryForObject("SELECT * FROM systempops WHERE name LIKE '%$name%'", systemPopsRowMapper) ?: throw Exception()
+    }
+
     override fun getSystemsByDistance(name: String, distance: Int): List<SystemPopsDistance>
     {
-        val focusSystem = getSystemByName(name) ?: throw Exception("System Not exist")
+        val focusSystem = getSystemsByName(name) ?: throw Exception("System Not exist")
         val listSystem = jdbcTemplate.query("SELECT * FROM systempops", systemPopsRowMapper)
         var list = mutableListOf<SystemPopsDistance>()
         listSystem.forEach {
@@ -277,10 +290,12 @@ open class SystemPopsDao : SystemPopsDaoI
         return listSystem
     }
 
+    override fun resetTable() = jdbcTemplate.update("truncate table systempops")
+
 }
 
 @Repository
-open class StationsDao : StationsDaoI
+class StationsDao : StationsDaoI
 {
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
@@ -424,4 +439,6 @@ open class StationsDao : StationsDaoI
     {
         return jdbcTemplate.query("SELECT * FROM stations WHERE system_id = '$systemId'", stationRowMapper).toList()
     }
+
+    override fun resetTable() = jdbcTemplate.update("truncate table stations")
 }

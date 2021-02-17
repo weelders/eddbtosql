@@ -33,102 +33,92 @@ class MainWS
         return "Server Status: OK"
     }
 
-    //Get informations from EDDB and push them in DB, /!\TAKE ~20min/!\
+    @GetMapping("/create")
+    fun createTable(): String
+    {
+        traceServerRequest("/create")
+        try
+        {
+            commoditiesDaoI.createTable()
+            factionsDaoI.createTable()
+            systemPopsDaoI.createTable()
+            stationsDaoI.createTable()
+            return "Tables successfully created"
+        } catch (e: Exception)
+        {
+            e.printStackTrace()
+            return e.message.toString()
+        }
+    }
+
+
     @GetMapping("/update")
     fun updateAll(): String
     {
         traceServerRequest("/update")
-        var debut = System.currentTimeMillis()
+        val debut = System.currentTimeMillis()
         runBlocking {
-            traceUpdate("Update/Commodities", "Drop Table...")
-            commoditiesDaoI.deleteTable()
             traceUpdate("Update/Commodities", "Create Empty Table...")
-            commoditiesDaoI.createTable()
+            commoditiesDaoI.resetTable()
             //Fill table Commoditites with https://eddb.io/archive/v6/commodities.json (~400 input,~120kb)
             traceUpdate("Update/Commodities", "Init Filling Table...")
             launch {
                 traceUpdate("Update/Commodities", "Starting List Building...")
                 val commoditieslist = updateCommodities()
                 traceUpdate("Update/Commodities", "List Building Finish.")
-                //Ouvrir la transaction
-                runBlocking {
-                    commoditieslist.forEach {
-                        launch { commoditiesDaoI.save(it) }
-                    }
+                commoditieslist.forEach {
+                    launch { commoditiesDaoI.save(it) }
                 }
-                //Fermer la transaction
-                traceUpdate("Update/Commodities", "Succefully Add Data to Table.")
+                traceUpdate("Update/Commodities", "Successfully Add Data to Table.")
             }
 
 
-
-
-
-            traceUpdate("Update/Factions", "Drop Table...")
-            factionsDaoI.deleteTable()
             traceUpdate("Update/Factions", "Create Empty Table...")
-            factionsDaoI.createTable()
+            factionsDaoI.resetTable()
             traceUpdate("Update/Factions", "Init Filling Table...")
             //Fill table Factions with /!\HUGE JSON/!\ https://eddb.io/archive/v6/factions.json (~70k input,~15_500kb)
             launch {
                 traceUpdate("Update/Factions", "Starting List Building...")
                 val factionslist = updateFactions()
                 traceUpdate("Update/Factions", "List Building Finish.")
-                runBlocking {
-                    factionslist.forEach {
-                        launch { factionsDaoI.save(it) }
-                    }
+                factionslist.forEach {
+                    launch { factionsDaoI.save(it) }
                 }
-                traceUpdate("Update/Factions", "Succefully Add Data to Table.")
+                traceUpdate("Update/Factions", "Successfully Add Data to Table.")
             }
 
 
-
-
-
-
-
-            traceUpdate("Update/SystemPops", "Drop Table...")
-            systemPopsDaoI.deleteTable()
             traceUpdate("Update/SystemPops", "Create Empty Table...")
-            systemPopsDaoI.createTable()
+            systemPopsDaoI.resetTable()
             traceUpdate("Update/SystemPops", "Init Filling Table...")
             //Fill table SystemPops with /!\HUGE JSON/!\ https://eddb.io/archive/v6/systems_populated.json(~20k input,~33_500kb)
             launch {
                 traceUpdate("Update/SystemPops", "Starting List Building...")
                 val systempoplist = updateSystemPops()
                 traceUpdate("Update/SystemPops", "List Building Finish.")
-                runBlocking {
-                    systempoplist.forEach {
-                        launch { systemPopsDaoI.save(it) }
-                    }
+                systempoplist.forEach {
+                    launch { systemPopsDaoI.save(it) }
                 }
-                traceUpdate("Update/SystemPops", "Succefully Add Data to Table.")
+                traceUpdate("Update/SystemPops", "Successfully Add Data to Table.")
             }
 
 
-
-
-            traceUpdate("Update/Stations", "Drop Table...")
-            stationsDaoI.deleteTable()
             traceUpdate("Update/Stations", "Create Empty Table...")
-            stationsDaoI.createTable()
+            stationsDaoI.resetTable()
             traceUpdate("Update/Stations", "Init Filling Table...")
             //Fill table Stations with /!\HUGE JSON/!\ https://eddb.io/archive/v6/stations.json(~54k input,~124_000kb)
             launch {
                 traceUpdate("Update/Stations", "Starting List Building...")
                 val stationslist = updateStations()
                 traceUpdate("Update/Stations", "List Building Finish.")
-                runBlocking {
-                    stationslist.forEach {
-                        launch { stationsDaoI.save(it) }
-                    }
+                stationslist.forEach {
+                    launch { stationsDaoI.save(it) }
                 }
-                traceUpdate("Update/Stations", "Succefully Add Data to Table.")
+                traceUpdate("Update/Stations", "Successfully Add Data to Table.")
             }
         }
-        println("temps: ${(System.currentTimeMillis() - debut) / 1000}")
-        return "Dump Succefully Done"
+        println("Update time: ${(System.currentTimeMillis() - debut) / 1000}s")
+        return "Dump Successfully Done"
     }
 
     //Return an List String of SystemsNames
@@ -147,9 +137,9 @@ class MainWS
         try
         {
             //Get System 1 by this name
-            val systemPops1 = systemPopsDaoI.getSystemByName(userInputCheck(name1))
+            val systemPops1 = systemPopsDaoI.getSystemsByName(userInputCheck(name1))
             //Get System 2 by this name
-            val systemPops2 = systemPopsDaoI.getSystemByName(userInputCheck(name2))
+            val systemPops2 = systemPopsDaoI.getSystemsByName(userInputCheck(name2))
             if (systemPops1.isNotEmpty() && systemPops2.isNotEmpty())
             {
                 //Return double distance in "xxxx,xx" format
@@ -172,50 +162,31 @@ class MainWS
         }
     }
 
-    //need optimisation, too slow when distance > 20
-//    @GetMapping("/getShips")
-//    fun getShips(@RequestParam name: String, @RequestParam distance: Int, @RequestParam ship: String): Any
-//    {
-//        traceServerRequest("/getShips?name=$name&distance=$distance&ship=$ship")
-//        //Get all systems where distance < $distance around $name
-//        val listSystem = systemPopsDaoI.getSystemsByDistance(name, distance)
-//        var listComplexeStations = mutableListOf<ComplexeStations>()
-//
-//        //For each system in systemList, add him into listComplexeStation if has_Docking && sell ships
-//        runBlocking {
-//            listSystem.forEach {
-//                GlobalScope.launch {
-//                    var listStations = mutableListOf<Stations>()
-//                    stationsDaoI.getStationsBySystemId(it.systemPops.id).forEach {
-//                        if (it.has_docking && it.selling_ships.isNotEmpty()) listStations.add(it)
-//                    }
-//                    listStations = listStations.filter { it.selling_ships.any { it == ship } }.toMutableList()
-//                    if (listStations.size != 0)
-//                    {
-//                        listComplexeStations.add(ComplexeStations(it, listStations))
-//                    }
-//                }.join()
-//            }
-//        }
-//
-//        traceUpdate("/getShips", "Return ${listComplexeStations.size} result")
-//        //Return a list of systems who contain a list of stations
-//        return listComplexeStations
-//    }
-
+    //Get 1 name, 1 distance, 1 ship & return list of stations with distance between start point and this stations
     @GetMapping("/getShipStation")
-    fun getShipStation(@RequestParam name: String, @RequestParam distance: Int, @RequestParam ship: String): List<ShipSystemDistance>
+    fun getShipStation(@RequestParam name: String, @RequestParam distance: Int, @RequestParam ship: String): Any
     {
         traceServerRequest("/getShipStation?name=$name&distance=$distance&ship=$ship")
-        val focusSystem = systemPopsDaoI.getSystemByName(name)[0]
-        val listSystem = systemPopsDaoI.getSystemShip(ship)
-        var list = mutableListOf<ShipSystemDistance>()
-        listSystem.forEach {
-            if ((round(distance3DCalculation(focusSystem.x, focusSystem.y, focusSystem.z, it.x, it.y, it.z) * 100) / 100) <= distance.toDouble()
-            ) list.add(ShipSystemDistance(it, (round(distance3DCalculation(focusSystem.x, focusSystem.y, focusSystem.z, it.x, it.y, it.z) * 100) / 100)))
+        try
+        {
+            val focusSystem = systemPopsDaoI.getOneSystemByName(name)
+            val listSystem = systemPopsDaoI.getSystemShip(ship)
+            val list = mutableListOf<ShipSystemDistance>()
+            listSystem.forEach {
+                if ((round(distance3DCalculation(focusSystem.x, focusSystem.y, focusSystem.z, it.x, it.y, it.z) * 100) / 100) <= distance.toDouble()
+                ) list.add(ShipSystemDistance(it, (round(distance3DCalculation(focusSystem.x, focusSystem.y, focusSystem.z, it.x, it.y, it.z) * 100) / 100)))
+            }
+            traceUpdate("/getShipStation", "Return ${list.size} result")
+            return list.sortedBy { it.distance }
+        } catch (e: IncorrectResultSizeDataAccessException)
+        {
+            traceUpdate("/getShipStation", "Name '$name' is incorrect or data doesnt exist.")
+            return "Name '$name' is incorrect or data doesnt exist."
+        } catch (e: Exception)
+        {
+            e.printStackTrace()
+            return e.message.toString()
         }
-        traceUpdate("/getShipStation", "Return ${list.size} result")
-        return list.sortedBy { it.distance }
     }
 
     //TODO Add factions
@@ -228,7 +199,7 @@ class MainWS
             //Check UserInput Before search
             val verifiedName = userInputCheck(name)
             //Get systems by they names
-            val system = systemPopsDaoI.getSystemByName(verifiedName)
+            val system = systemPopsDaoI.getSystemsByName(verifiedName)
             val listComplexeStations = mutableListOf<ComplexeStations>()
             system.forEach {
                 //Get all station by system_id get before
