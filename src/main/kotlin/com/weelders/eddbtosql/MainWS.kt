@@ -211,13 +211,7 @@ class MainWS
         val listSystem = systemPopsDaoI.getSystemShip(ship)
         var list = mutableListOf<ShipSystemDistance>()
         listSystem.forEach {
-            if ((round(distance3DCalculation(
-                    focusSystem.x,
-                    focusSystem.y,
-                    focusSystem.z,
-                    it.x,
-                    it.y,
-                    it.z) * 100) / 100) <= distance.toDouble()
+            if ((round(distance3DCalculation(focusSystem.x, focusSystem.y, focusSystem.z, it.x, it.y, it.z) * 100) / 100) <= distance.toDouble()
             ) list.add(ShipSystemDistance(it, (round(distance3DCalculation(focusSystem.x, focusSystem.y, focusSystem.z, it.x, it.y, it.z) * 100) / 100)))
         }
         traceUpdate("/getShipStation", "Return ${list.size} result")

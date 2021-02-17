@@ -272,7 +272,7 @@ open class SystemPopsDao : SystemPopsDaoI
     override fun getSystemShip(ship: String): List<ShipSystem>
     {
         val listSystem =
-            jdbcTemplate.query("SELECT systempops.name as name_system,stations.name as name_station,systempops.x,systempops.y,systempops.z,stations.distance_to_star,stations.max_landing_pad_size FROM systempops INNER JOIN stations ON systempops.id = stations.system_id WHERE stations.selling_ships LIKE \"%$ship%\"",
+            jdbcTemplate.query("SELECT systempops.name as name_system,stations.name as name_station,systempops.x,systempops.y,systempops.z,stations.distance_to_star,stations.max_landing_pad_size FROM systempops INNER JOIN stations ON systempops.id = stations.system_id WHERE stations.selling_ships LIKE '%$ship%'",
                 shipSystemRowMapper)
         return listSystem
     }
